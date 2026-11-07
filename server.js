@@ -7,7 +7,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const db = new sqlite3.Database('./auth.db');
+// Ila kna f Railway, kan7etto l'db f /tmp. Ila kna f l'PC, kan7etto f l'folder.
+const dbPath = process.env.NODE_ENV === 'production' ? '/tmp/auth.db' : './auth.db';
+const db = new sqlite3.Database(dbPath);
 
 db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
