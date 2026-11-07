@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4FLAG CHEAT | Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0c;
+            --bg-card: rgba(18, 18, 22, 0.85);
+            --bg-hover: #1e1e24;
+            --border: #27272a;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent: #ff0000;
+            --accent-hover: #cc0000;
+            --red: #ef4444;
+            --green: #22c55e;
+            --discord: #5865F2;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #particles-js {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        #appDashboard { display: flex; width: 100%; height: 100%; z-index: 1; position: relative;}
+
+        .sidebar {
+            width: 250px;
+            background-color: rgba(18, 18, 22, 0.95);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+        }
+        .logo i { color: var(--accent); }
+
+        .app-selector {
+            background: var(--bg-hover);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active {
+            background: var(--bg-hover);
+            color: var(--text-main);
+        }
+        .nav-item i { width: 20px; }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(10, 10, 12, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        .search-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 8px 15px;
+            border-radius: 6px;
+            color: var(--text-main);
+            width: 300px;
+            outline: none;
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-card);
+            padding: 5px 15px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(5px);
+        }
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .dashboard { padding: 30px; }
+
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-actions h2 { font-size: 20px; }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+        .filter-btn.active { background: var(--bg-hover); color: white; border-color: var(--text-muted); }
+
+        /* USERS GRID */
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 15px;
+        }
+        .user-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        .user-card:hover { border-color: #3f3f46; }
+        
+        .user-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .username { font-weight: 600; font-size: 15px; letter-spacing: 1px; }
+        .status-badge {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--green);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-badge.expired { background: rgba(239, 68, 68, 0.1); color: var(--red); }
+        
+        .user-details {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .detail-item span { color: var(--text-main); display: block; margin-top: 4px; font-weight: 500;}
+
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+        }
+        .btn-delete {
+            background: transparent;
+            color: var(--red);
+            border: 1px solid var(--red);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-delete:hover { background: rgba(239, 68, 68, 0.1); }
+
+        /* MODAL (CREATE USER) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            width: 400px;
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(15px);
+        }
+        .modal h3 { font-size: 18px; margin-bottom: 5px; }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .form-group input, .form-group select {
+            background: rgba(10, 10, 12, 0.8);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            outline: none;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .checkbox-group input { width: 16px; height: 16px; }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-cancel { background: var(--bg-hover); color: white; }
+        .btn-cancel:hover { background: #3f3f46; }
+
+        /* CUSTOM DELETE MODAL */
+        #deleteModal .modal { width: 350px; text-align: center; }
+        #deleteModal .modal-actions { justify-content: center; }
+        #deleteModal .icon { font-size: 40px; color: var(--red); margin-bottom: 10px; }
+
+        /* TOAST NOTIFICATION */
+        #toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--green);
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+        }
+        #toast.show { transform: translateX(0); }
+        #toast .icon { color: var(--green); font-size: 20px; }
+        #toast .content { display: flex; flex-direction: column; gap: 2px; }
+        #toast .title { font-weight: 600; font-size: 14px; }
+        #toast .msg { font-size: 12px; color: var(--text-muted); }
+        #toast .close { color: var(--text-muted); cursor: pointer; margin-left: 10px; font-size: 16px; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="particles-js"></div>
+
+    <div id="toast">
+        <i class="fa-solid fa-circle-check icon"></i>
+        <div class="content">
+            <div class="title">Successfully created user!</div>
+            <div class="msg" id="toastMsg"></div>
+        </div>
+        <i class="fa-solid fa-xmark close" onclick="closeToast()"></i>
+    </div>
+
+    <div id="appDashboard">
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved"></i> 4FLAG CHEAT
+            </div>
+            <div class="app-selector">
+                4FLAG Application <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+            </div>
+            
+            <a class="nav-item active"><i class="fa-solid fa-users"></i> Users</a>
+            
+            <div style="margin-top: auto;">
+                <a class="nav-item" href="https://discord.gg/A5aQKc6jqx" target="_blank" style="color: #5865F2;">
+                    <i class="fa-brands fa-discord"></i> Join Discord
+                </a>
+                <a class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="topbar">
+                <input type="text" class="search-bar" placeholder="Search pages...">
+                <div class="user-profile">
+                    <div class="avatar">4</div>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 600;">Admin</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">Administrator</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard">
+                <div class="header-actions">
+                    <h2>Users</h2>
+                    <button class="btn btn-primary" onclick="openModal()">
+                        <i class="fa-solid fa-plus"></i> Create User
+                    </button>
+                </div>
+                
+                <div class="filters">
+                    <button class="filter-btn active"><i class="fa-solid fa-filter"></i></button>
+                    <button class="filter-btn"><i class="fa-solid fa-border-all"></i></button>
+                    <button class="filter-btn"><i class="fa-solid fa-user-plus"></i></button>
+                </div>
+
+                <div class="users-grid" id="usersGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="createUserModal">
+        <div class="modal">
+            <h3>Create user</h3>
+            
+            <div class="form-group">
+                <label>Username <span style="color:red">*</span></label>
+                <input type="text" id="newUsername" placeholder="e.g. 4FLAG">
+            </div>
+            
+            <div class="form-group">
+                <label>Password <i class="fa-regular fa-circle-question"></i></label>
+                <input type="text" id="newPassword" placeholder="Enter password for panel">
+            </div>
+
+            <div class="form-group">
+                <label>Expiration <span style="color:red">*</span></label>
+                <input type="date" id="newExpiry">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="hwidLock" checked>
+                <label for="hwidLock">HWID Affected <i class="fa-regular fa-circle-question"></i></label>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createUser(event)">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <i class="fa-solid fa-triangle-exclamation icon"></i>
+            <h3>Are you sure?</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 10px;">Do you really want to delete this user? This process cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmDelete()" style="background: var(--red);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            "particles": {
+                "number": { "value": 60, "density": { "enable": true, "value_area": 800 } },
+                "color": { "value": "#ff0000" },
+                "shape": { "type": "circle" },
+                "opacity": { "value": 0.4, "random": false, "anim": { "enable": false } },
+                "size": { "value": 3, "random": true, "anim": { "enable": false } },
+                "line_linked": { "enable": true, "distance": 150, "color": "#ff0000", "opacity": 0.3, "width": 1 },
+                "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" } },
+                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 1 } } }
+            },
+            "retina_detect": true
+        });
+
+        const API_URL = "http://localhost:3000"; 
+        let ADMIN_PASSWORD = localStorage.getItem('adminPassword');
+        let userToDeleteId = null;
+
+        if (!ADMIN_PASSWORD) {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('adminPassword');
+            window.location.href = 'login.html';
+        }
+
+        function openModal() {
+            document.getElementById('createUserModal').style.display = 'flex';
+            let tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('newExpiry').value = tomorrow.toISOString().split('T')[0];
+        }
+
+        function closeModal() {
+            document.getElementById('createUserModal').style.display = 'none';
+        }
+
+        function showToast(username, password) {
+            const toast = document.getElementById('toast');
+            // HNA KAYTLA3 L'USERNAME W L'PASSWORD LI KTEBC NTA
+            document.getElementById('toastMsg').innerHTML = `User: <b>${username}</b> | Pass: <b>${password}</b>`;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 5000);
+        }
+
+        function closeToast() {
+            document.getElementById('toast').classList.remove('show');
+        }
+
+        async function createUser(e) {
+            if(e) e.preventDefault();
+
+            const username = document.getElementById('newUsername').value;
+            const password = document.getElementById('newPassword').value; // KAN-AKHDO L'PASSWORD LI KTEBC NTA
+            const expiry = document.getElementById('newExpiry').value;
+            const hwidLock = document.getElementById('hwidLock').checked;
+
+            if (!username) return alert("Username is required!");
+            if (!password) return alert("Password is required!");
+
+            try {
+                const res = await fetch(`${API_URL}/api/generate`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-password': ADMIN_PASSWORD 
+                    },
+                    body: JSON.stringify({ username, password: password, expiry, hwid: hwidLock ? "1" : "0" })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    // Kan-3ayto l'toast b l'username w password li kteb nta
+                    showToast(username, password);
+                    closeModal();
+                    loadUsers();
+                } else {
+                    alert("Server Error: " + JSON.stringify(data));
+                }
+            } catch (e) {
+                alert("Server error: " + e.message);
+            }
+        }
+
+        function openDeleteModal(id) {
+            userToDeleteId = id;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        function closeDeleteModal() {
+            userToDeleteId = null;
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        async function confirmDelete() {
+            if (!userToDeleteId) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/delete`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-admin-password': ADMIN_PASSWORD 
+                    },
+                    body: JSON.stringify({ id: userToDeleteId })
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    closeDeleteModal();
+                    loadUsers();
+                } else {
+                    alert("Error deleting user");
+                }
+            } catch (e) {
+                alert("Server error: " + e.message);
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/users`, {
+                    headers: { 'x-admin-password': ADMIN_PASSWORD }
+                });
+                const users = await res.json();
+                
+                const grid = document.getElementById('usersGrid');
+                grid.innerHTML = "";
+
+                users.forEach(user => {
+                    let expiryDate = user.expiry_date ? user.expiry_date : "Lifetime";
+                    let isExpired = false;
+                    if (user.expiry_date && new Date(user.expiry_date) < new Date()) isExpired = true;
+
+                    let hwidStatus = "No";
+                    if (user.hwid === "PENDING" || (user.hwid && user.hwid !== "NO_HWID")) {
+                        hwidStatus = "Yes";
+                    }
+                    
+                    let displayName = user.username ? user.username : "N/A";
+                    
+                    grid.innerHTML += `
+                        <div class="user-card">
+                            <div class="user-card-header">
+                                <div class="username" style="text-transform: uppercase;">${displayName}</div>
+                                <div class="status-badge ${isExpired ? 'expired' : ''}">
+                                    ${isExpired ? 'Expired' : 'Active'}
+                                </div>
+                            </div>
+                            <div class="user-details">
+                                <div class="detail-item">Created <span>${user.created_at ? user.created_at.split(' ')[0] : 'N/A'}</span></div>
+                                <div class="detail-item">Expiry <span>${expiryDate}</span></div>
+                                <div class="detail-item">HWID Affected <span>${hwidStatus}</span></div>
+                                <div class="detail-item">Password <span>${user.password}</span></div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-delete" onclick="openDeleteModal(${user.id})">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) {
+                console.error("Failed to load users. Check server.");
+            }
+        }
+
+        if (ADMIN_PASSWORD) {
+            loadUsers();
+        }
+    </script>
+</body>
+</html>
