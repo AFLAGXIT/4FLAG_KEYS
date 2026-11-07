@@ -29,7 +29,6 @@
             position: relative;
         }
 
-        /* --- PARTICLES BACKGROUND --- */
         #particles-js {
             position: absolute;
             top: 0;
@@ -40,7 +39,7 @@
         }
 
         .login-box { 
-            background: rgba(18, 18, 22, 0.85); /* T7ET L'SHOFYA CHWIYA BACH YBANOU L'PARTICLES */
+            background: rgba(18, 18, 22, 0.85); 
             backdrop-filter: blur(10px);
             border: 1px solid var(--border); 
             padding: 40px; 
@@ -48,7 +47,7 @@
             width: 350px; 
             text-align: center; 
             box-shadow: 0 10px 30px rgba(255,0,0,0.1); 
-            z-index: 2; /* BACH YKON FOU9 L'PARTICLES */
+            z-index: 2; 
             position: relative;
         }
         .login-box h1 { 
@@ -92,7 +91,6 @@
 </head>
 <body>
 
-    <!-- HNA FIN KAYT7ETO L'PARTICLES -->
     <div id="particles-js"></div>
 
     <div class="login-box">
@@ -102,57 +100,28 @@
         <button class="login-btn" onclick="login()">Login</button>
     </div>
 
-    <!-- SCRIPT DYAL L'PARTICLES -->
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // HNA KAN-SAWBO L'PARTICLES B L'LON L'7MER
         particlesJS("particles-js", {
             "particles": {
                 "number": { "value": 60, "density": { "enable": true, "value_area": 800 } },
-                "color": { "value": "#ff0000" }, /* LON L'PARTICLES 7MER */
+                "color": { "value": "#ff0000" },
                 "shape": { "type": "circle" },
-                "opacity": {
-                    "value": 0.5,
-                    "random": false,
-                    "anim": { "enable": false }
-                },
-                "size": {
-                    "value": 3,
-                    "random": true,
-                    "anim": { "enable": false }
-                },
-                "line_linked": {
-                    "enable": true,
-                    "distance": 150,
-                    "color": "#ff0000", /* L'LINE LI KAYRBT HOM 7MER */
-                    "opacity": 0.4,
-                    "width": 1
-                },
-                "move": {
-                    "enable": true,
-                    "speed": 2,
-                    "direction": "none",
-                    "random": false,
-                    "straight": false,
-                    "out_mode": "out",
-                    "bounce": false
-                }
+                "opacity": { "value": 0.5, "random": false, "anim": { "enable": false } },
+                "size": { "value": 3, "random": true, "anim": { "enable": false } },
+                "line_linked": { "enable": true, "distance": 150, "color": "#ff0000", "opacity": 0.4, "width": 1 },
+                "move": { "enable": true, "speed": 2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
             },
             "interactivity": {
                 "detect_on": "canvas",
-                "events": {
-                    "onhover": { "enable": true, "mode": "grab" },
-                    "onclick": { "enable": true, "mode": "push" }
-                },
-                "modes": {
-                    "grab": { "distance": 140, "line_linked": { "opacity": 1 } }
-                }
+                "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" } },
+                "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 1 } } }
             },
             "retina_detect": true
         });
 
-        // L'CODE DYAL L'LOGIN
-        const API_URL = "http://localhost:3000"; 
+        // BDEL HADA B L'URL DYAL RENDER ILA 3TAK WA7D AKHOR
+        const API_URL = "https://4flag-keys.onrender.com"; 
 
         function login() {
             const pass = document.getElementById('adminLoginPass').value;
@@ -167,7 +136,7 @@
                 } else {
                     alert("Wrong Admin Password!");
                 }
-            }).catch(() => alert("Server error. Make sure node server.js is running."));
+            }).catch(() => alert("Server error. Make sure the server is running."));
         }
     </script>
 </body>

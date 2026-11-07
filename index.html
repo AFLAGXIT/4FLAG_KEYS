@@ -187,7 +187,6 @@
         }
         .filter-btn.active { background: var(--bg-hover); color: white; border-color: var(--text-muted); }
 
-        /* USERS GRID */
         .users-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -253,7 +252,6 @@
         }
         .btn-delete:hover { background: rgba(239, 68, 68, 0.1); }
 
-        /* MODAL (CREATE USER) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.7);
@@ -317,12 +315,10 @@
         .btn-cancel { background: var(--bg-hover); color: white; }
         .btn-cancel:hover { background: #3f3f46; }
 
-        /* CUSTOM DELETE MODAL */
         #deleteModal .modal { width: 350px; text-align: center; }
         #deleteModal .modal-actions { justify-content: center; }
         #deleteModal .icon { font-size: 40px; color: var(--red); margin-bottom: 10px; }
 
-        /* TOAST NOTIFICATION */
         #toast {
             position: fixed;
             top: 20px;
@@ -479,7 +475,8 @@
             "retina_detect": true
         });
 
-        const API_URL = "http://localhost:3000"; 
+        // BDEL HADA B L'URL DYAL RENDER ILA 3TAK WA7D AKHOR
+        const API_URL = "https://4flag-keys.onrender.com"; 
         let ADMIN_PASSWORD = localStorage.getItem('adminPassword');
         let userToDeleteId = null;
 
@@ -505,7 +502,6 @@
 
         function showToast(username, password) {
             const toast = document.getElementById('toast');
-            // HNA KAYTLA3 L'USERNAME W L'PASSWORD LI KTEBC NTA
             document.getElementById('toastMsg').innerHTML = `User: <b>${username}</b> | Pass: <b>${password}</b>`;
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 5000);
@@ -519,7 +515,7 @@
             if(e) e.preventDefault();
 
             const username = document.getElementById('newUsername').value;
-            const password = document.getElementById('newPassword').value; // KAN-AKHDO L'PASSWORD LI KTEBC NTA
+            const password = document.getElementById('newPassword').value;
             const expiry = document.getElementById('newExpiry').value;
             const hwidLock = document.getElementById('hwidLock').checked;
 
@@ -538,7 +534,6 @@
                 
                 const data = await res.json();
                 if (data.success) {
-                    // Kan-3ayto l'toast b l'username w password li kteb nta
                     showToast(username, password);
                     closeModal();
                     loadUsers();

@@ -25,20 +25,18 @@ function generateKey() {
 
 // 1. Login (L'panel C++ kay3yet 3liha b l'Username w Password li kteb l'admin)
 app.post('/api/login', (req, res) => {
-    const { key, password, hwid } = req.body; // L'panel kayb3at l'Username f blast l'key
+    const { key, password, hwid } = req.body; 
     if (!key || !password || !hwid) return res.status(400).json({ error: "Missing fields" });
 
     db.get(`SELECT * FROM users WHERE username = ? AND password = ?`, [key, password], (err, row) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!row) return res.status(401).json({ error: "Invalid username or password" });
 
-        // Nchoufo l'Expiration
         if (row.expiry_date) {
             const today = new Date().toISOString().split('T')[0];
             if (today > row.expiry_date) return res.status(403).json({ error: "License has expired" });
         }
 
-        // Nchoufo l'HWID
         if (row.hwid === "PENDING") {
             db.run(`UPDATE users SET hwid = ? WHERE id = ?`, [hwid, row.id]);
         } 
@@ -52,17 +50,16 @@ app.post('/api/login', (req, res) => {
 
 // 2. Generate User (Site)
 app.post('/api/generate', (req, res) => {
-    const { username, password, expiry, hwid } = req.body; // ZEDNA PASSWORD
-    const newKey = generateKey(); // Key twila mazal kayna f l'background (ila bghitha)
-    const finalPass = password ? password : "123456"; // Ila ma ktebch, 123456 b default
+    const { username, password, expiry, hwid } = req.body; 
+    const newKey = generateKey(); 
+    const finalPass = password ? password : "123456"; 
 
-    // Ila l'admin 3lem 3la HWID, kan7etto PENDING bach ytsjel mli ydkhel
     let hwidStatus = (hwid === "1") ? "PENDING" : "NO_HWID";
 
     db.run(`INSERT INTO users (username, key, password, expiry_date, hwid) VALUES (?, ?, ?, ?, ?)`, 
         [username, newKey, finalPass, expiry, hwidStatus], function(err) {
         if (err) return res.status(500).json({ error: "Database error: " + err.message });
-        res.json({ success: true }); // Kan-rj3o success ghir bach l'site y3ref
+        res.json({ success: true });
     });
 });
 
@@ -89,6 +86,8 @@ app.post('/api/admin/delete', (req, res) => {
     });
 });
 
-app.listen(3000, () => {
-    console.log('Auth server running on port 3000');
+// Port dyal Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Auth server running on port ${PORT}`);
 });
