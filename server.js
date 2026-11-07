@@ -88,8 +88,8 @@ app.post('/api/admin/delete', (req, res) => {
     });
 });
 
-// Port dyal Railway / Render
+// HNA KAN-KHDOU L'PORT LI RAILWAY KAY3TINA (ILA KNA F LOCAL, KAYAKHOD 3000)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Auth server running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
 });
