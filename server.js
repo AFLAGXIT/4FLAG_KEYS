@@ -86,7 +86,7 @@ app.post('/api/admin/delete', (req, res) => {
     });
 });
 
-// Port dyal Render
+// Port dyal Railway / Render
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Auth server running on port ${PORT}`);
