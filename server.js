@@ -32,7 +32,7 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
     expiry_date TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(app_id) REFERENCES apps(id)
-)`);
+)`);   
 
 // Zid app "4FLAG Application" ila ma kanatch
 db.get(`SELECT * FROM apps WHERE name = '4FLAG Application'`, (err, row) => {
