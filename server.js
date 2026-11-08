@@ -3,15 +3,15 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const crypto = require('crypto');
 
-const app = express();  
+const app = express();
 app.use(express.json());
 app.use(cors());
 
-// HNA KAN-KHDOU L'PATH DYAL L'VOLUME DYAL RAILWAY BACH L'USERS YB9AW LIFE TIME
+// L'PATH DYAL L'VOLUME F RAILWAY
 const dbPath = process.env.RAILWAY_ENVIRONMENT ? '/var/data/auth.db' : './auth.db';
 const db = new sqlite3.Database(dbPath);
 
-// 1. Table dyal l'Apps (m3a ownerid, secret, version)
+// 1. Table dyal l'Apps
 db.run(`CREATE TABLE IF NOT EXISTS apps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE,
@@ -47,17 +47,64 @@ function generateKey() {
     return crypto.randomBytes(16).toString('hex').toUpperCase();
 }
 
-// 3. Login dyal l'Panel C++ (kay9bel app_name, ownerid, secret, w l'username)
+// ==========================================
+// --- DISCORD OAUTH ---
+// ==========================================
+const DISCORD_CLIENT_ID = "1568790262409338941";
+const DISCORD_CLIENT_SECRET = "3QtsHZ706n2azm1UY1derrosR6aPcIet";
+const DISCORD_REDIRECT_URI = "https://4flagkeys-production-8b1a.up.railway.app/api/auth/discord/callback";
+
+app.get('/api/auth/discord', (req, res) => {
+    const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT_URI)}&response_type=code&scope=identify`;
+    res.redirect(url);
+});
+
+app.get('/api/auth/discord/callback', async (req, res) => {
+    const code = req.query.code;
+    if (!code) return res.send("No code provided");
+
+    try {
+        const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
+            method: 'POST',
+            body: new URLSearchParams({
+                client_id: DISCORD_CLIENT_ID,
+                client_secret: DISCORD_CLIENT_SECRET,
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri: DISCORD_REDIRECT_URI,
+                scope: 'identify',
+            }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
+
+        const userResponse = await fetch('https://discord.com/api/users/@me', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const userData = await userResponse.json();
+
+        const userJson = JSON.stringify({ username: userData.global_name || userData.username, id: userData.id, avatar: userData.avatar });
+        res.redirect(`https://4flag-webkeys.vercel.app/index.html?discord=${encodeURIComponent(userJson)}`);
+    } catch (error) {
+        res.status(500).send("Discord auth failed");
+    }
+});
+
+// ==========================================
+// --- APP & USER API ---
+// ==========================================
+
+// 3. Login dyal l'Panel C++
 app.post('/api/login', (req, res) => {
     const { app_name, ownerid, secret, key, password, hwid } = req.body; 
     if (!app_name || !ownerid || !secret || !key || !password || !hwid) return res.status(400).json({ error: "Missing fields" });
 
-    // Kan-verifiw l'app b l'name, l'ownerid w l'secret
     db.get(`SELECT * FROM apps WHERE name = ? AND ownerid = ? AND secret = ?`, [app_name, ownerid, secret], (err, appRow) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (!appRow) return res.status(401).json({ error: "Invalid App credentials" });
 
-        // Mn be3d kan-verifiw l'user f dik l'app
         db.get(`SELECT * FROM users WHERE app_id = ? AND username = ? AND password = ?`, [appRow.id, key, password], (err, row) => {
             if (err) return res.status(500).json({ error: "Database error" });
             if (!row) return res.status(401).json({ error: "Invalid username or password" });
@@ -79,7 +126,7 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// 4. Generate User (kayakhod app_id)
+// 4. Generate User
 app.post('/api/generate', (req, res) => {
     const { app_id, username, password, expiry, hwid } = req.body; 
     const newKey = generateKey(); 
@@ -93,7 +140,7 @@ app.post('/api/generate', (req, res) => {
     });
 });
 
-// 5. Admin Users List (kayakhod app_id)
+// 5. Jib l'Users dyal app
 app.get('/api/admin/users/:app_id', (req, res) => {
     const pass = req.headers['x-admin-password'];
     if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
@@ -128,7 +175,7 @@ app.get('/api/admin/apps', (req, res) => {
     });
 });
 
-// 8. Zid App jdida (kaygeneri ownerid, secret, version)
+// 8. Zid App jdida
 app.post('/api/admin/apps', (req, res) => {
     const pass = req.headers['x-admin-password'];
     if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
@@ -142,6 +189,25 @@ app.post('/api/admin/apps', (req, res) => {
         [name, newOwnerId, newSecret, version], function(err) {
         if (err) return res.status(500).json({ error: "Database error: " + err.message });
         res.json({ success: true, id: this.lastID, ownerid: newOwnerId, secret: newSecret, version: version });
+    });
+});
+
+// 9. Delete App (kaymse7 l'app w l'users dyalha)
+app.delete('/api/admin/apps/:app_id', (req, res) => {
+    const pass = req.headers['x-admin-password'];
+    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
+
+    const app_id = req.params.app_id;
+    
+    // N-mse7o l'users dyal l'app l'lowla
+    db.run(`DELETE FROM users WHERE app_id = ?`, [app_id], function(err) {
+        if (err) return res.status(500).json({ error: "Database error" });
+        
+        // Mn be3d n-mse7o l'app
+        db.run(`DELETE FROM apps WHERE id = ?`, [app_id], function(err) {
+            if (err) return res.status(500).json({ error: "Database error" });
+            res.json({ success: true });
+        });
     });
 });
 
