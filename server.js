@@ -7,7 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// HNA KAN-KHDOU L'PATH DYAL L'VOLUME DYAL RAILWAY BACH L'USERS YB9AW LIFE TIME
 const dbPath = process.env.RAILWAY_ENVIRONMENT ? '/var/data/auth.db' : './auth.db';
 const db = new sqlite3.Database(dbPath);
 
@@ -25,7 +24,6 @@ function generateKey() {
     return crypto.randomBytes(16).toString('hex').toUpperCase();
 }
 
-// 1. Login (Panel C++)
 app.post('/api/login', (req, res) => {
     const { key, password, hwid } = req.body; 
     if (!key || !password || !hwid) return res.status(400).json({ error: "Missing fields" });
@@ -50,7 +48,6 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// 2. Generate User (Site)
 app.post('/api/generate', (req, res) => {
     const { username, password, expiry, hwid } = req.body; 
     const newKey = generateKey(); 
@@ -64,7 +61,6 @@ app.post('/api/generate', (req, res) => {
     });
 });
 
-// 3. Admin Users List
 app.get('/api/admin/users', (req, res) => {
     const pass = req.headers['x-admin-password'];
     if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
@@ -75,7 +71,6 @@ app.get('/api/admin/users', (req, res) => {
     });
 });
 
-// 4. Delete User
 app.post('/api/admin/delete', (req, res) => {
     const pass = req.headers['x-admin-password'];
     if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
@@ -87,53 +82,6 @@ app.post('/api/admin/delete', (req, res) => {
     });
 });
 
-// --- DISCORD OAUTH CONFIG ---
-const DISCORD_CLIENT_ID = "1568790262409338941";
-const DISCORD_CLIENT_SECRET = "3QtsHZ706n2azm1UY1derrosR6aPcIet";
-const DISCORD_REDIRECT_URI = "https://4flagkeys-production-8b1a.up.railway.app/api/auth/discord/callback";
-
-// 5. Redirect l Discord
-app.get('/api/auth/discord', (req, res) => {
-    const url = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT_URI)}&response_type=code&scope=identify`;
-    res.redirect(url);
-});
-
-// 6. Callback (mli y-rje3 mn Discord)
-app.get('/api/auth/discord/callback', async (req, res) => {
-    const code = req.query.code;
-    if (!code) return res.send("No code provided");
-
-    try {
-        const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
-            method: 'POST',
-            body: new URLSearchParams({
-                client_id: DISCORD_CLIENT_ID,
-                client_secret: DISCORD_CLIENT_SECRET,
-                code,
-                grant_type: 'authorization_code',
-                redirect_uri: DISCORD_REDIRECT_URI,
-                scope: 'identify',
-            }),
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        });
-
-        const tokenData = await tokenResponse.json();
-        const accessToken = tokenData.access_token;
-
-        const userResponse = await fetch('https://discord.com/api/users/@me', {
-            headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        const userData = await userResponse.json();
-
-        // Kan-rj3o l'site b l'data dyalou (bdel l'URL ila knti f hosting akhor)
-        const userJson = JSON.stringify({ username: userData.global_name || userData.username, id: userData.id, avatar: userData.avatar });
-        res.redirect(`https://4flag-webkeys.vercel.app/index.html?discord=${encodeURIComponent(userJson)}`);
-    } catch (error) {
-        res.status(500).send("Discord auth failed");
-    }
-});
-
-// HNA KAN-KHDOU L'PORT LI RAILWAY KAY3TINA
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
