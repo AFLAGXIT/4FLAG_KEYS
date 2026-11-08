@@ -199,11 +199,8 @@ app.delete('/api/admin/apps/:app_id', (req, res) => {
 
     const app_id = req.params.app_id;
     
-    // N-mse7o l'users dyal l'app l'lowla
     db.run(`DELETE FROM users WHERE app_id = ?`, [app_id], function(err) {
         if (err) return res.status(500).json({ error: "Database error" });
-        
-        // Mn be3d n-mse7o l'app
         db.run(`DELETE FROM apps WHERE id = ?`, [app_id], function(err) {
             if (err) return res.status(500).json({ error: "Database error" });
             res.json({ success: true });
