@@ -10,10 +10,13 @@ app.use(cors());
 const dbPath = process.env.RAILWAY_ENVIRONMENT ? '/var/data/auth.db' : './auth.db';
 const db = new sqlite3.Database(dbPath);
 
-// 1. Table dyal l'Apps
+// 1. Table dyal l'Apps (m3a l'ownerid w secret w version)
 db.run(`CREATE TABLE IF NOT EXISTS apps (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE,
+    ownerid TEXT,
+    secret TEXT,
+    version TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )`);
 
@@ -33,7 +36,9 @@ db.run(`CREATE TABLE IF NOT EXISTS users (
 // Zid app "4FLAG Application" ila ma kanatch
 db.get(`SELECT * FROM apps WHERE name = '4FLAG Application'`, (err, row) => {
     if (!row) {
-        db.run(`INSERT INTO apps (name) VALUES ('4FLAG Application')`);
+        const newOwnerId = crypto.randomBytes(8).toString('hex').toUpperCase();
+        const newSecret = crypto.randomBytes(16).toString('hex');
+        db.run(`INSERT INTO apps (name, ownerid, secret, version) VALUES ('4FLAG Application', ?, ?, '1.2')`, [newOwnerId, newSecret]);
     }
 });
 
@@ -41,28 +46,35 @@ function generateKey() {
     return crypto.randomBytes(16).toString('hex').toUpperCase();
 }
 
-// 3. Login (kay9bel app_id)
+// 3. Login dyal l'Panel (kay9bel l'name, ownerid, secret, w l'username)
 app.post('/api/login', (req, res) => {
-    const { app_id, key, password, hwid } = req.body; 
-    if (!app_id || !key || !password || !hwid) return res.status(400).json({ error: "Missing fields" });
+    const { app_name, ownerid, secret, key, password, hwid } = req.body; 
+    if (!app_name || !ownerid || !secret || !key || !password || !hwid) return res.status(400).json({ error: "Missing fields" });
 
-    db.get(`SELECT * FROM users WHERE app_id = ? AND username = ? AND password = ?`, [app_id, key, password], (err, row) => {
+    // Kan-verifiw l'app b l'name, l'ownerid w l'secret
+    db.get(`SELECT * FROM apps WHERE name = ? AND ownerid = ? AND secret = ?`, [app_name, ownerid, secret], (err, appRow) => {
         if (err) return res.status(500).json({ error: "Database error" });
-        if (!row) return res.status(401).json({ error: "Invalid username or password" });
+        if (!appRow) return res.status(401).json({ error: "Invalid App credentials" });
 
-        if (row.expiry_date) {
-            const today = new Date().toISOString().split('T')[0];
-            if (today > row.expiry_date) return res.status(403).json({ error: "License has expired" });
-        }
+        // Mn be3d kan-verifiw l'user f dik l'app
+        db.get(`SELECT * FROM users WHERE app_id = ? AND username = ? AND password = ?`, [appRow.id, key, password], (err, row) => {
+            if (err) return res.status(500).json({ error: "Database error" });
+            if (!row) return res.status(401).json({ error: "Invalid username or password" });
 
-        if (row.hwid === "PENDING") {
-            db.run(`UPDATE users SET hwid = ? WHERE id = ?`, [hwid, row.id]);
-        } 
-        else if (row.hwid && row.hwid !== "NO_HWID" && row.hwid !== hwid) {
-            return res.status(403).json({ error: "HWID mismatch." });
-        }
+            if (row.expiry_date) {
+                const today = new Date().toISOString().split('T')[0];
+                if (today > row.expiry_date) return res.status(403).json({ error: "License has expired" });
+            }
 
-        res.json({ success: true, message: "Logged in successfully" });
+            if (row.hwid === "PENDING") {
+                db.run(`UPDATE users SET hwid = ? WHERE id = ?`, [hwid, row.id]);
+            } 
+            else if (row.hwid && row.hwid !== "NO_HWID" && row.hwid !== hwid) {
+                return res.status(403).json({ error: "HWID mismatch." });
+            }
+
+            res.json({ success: true, message: "Logged in successfully" });
+        });
     });
 });
 
@@ -83,7 +95,7 @@ app.post('/api/generate', (req, res) => {
 // 5. Admin Users List (kayakhod app_id)
 app.get('/api/admin/users/:app_id', (req, res) => {
     const pass = req.headers['x-admin-password'];
-    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
+    if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
     
     const app_id = req.params.app_id;
     db.all(`SELECT * FROM users WHERE app_id = ? ORDER BY id DESC`, [app_id], (err, rows) => {
@@ -95,7 +107,7 @@ app.get('/api/admin/users/:app_id', (req, res) => {
 // 6. Delete User
 app.post('/api/admin/delete', (req, res) => {
     const pass = req.headers['x-admin-password'];
-    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
+    if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
 
     const { id } = req.body;
     db.run(`DELETE FROM users WHERE id = ?`, [id], function(err) {
@@ -104,10 +116,10 @@ app.post('/api/admin/delete', (req, res) => {
     });
 });
 
-// 7. Jib l'Apps koulhom
+// 7. Jib l'Apps koulhom (bach tbanou f l'site)
 app.get('/api/admin/apps', (req, res) => {
     const pass = req.headers['x-admin-password'];
-    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
+    if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
     
     db.all(`SELECT * FROM apps ORDER BY id ASC`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: "Database error" });
@@ -118,12 +130,15 @@ app.get('/api/admin/apps', (req, res) => {
 // 8. Zid App jdida
 app.post('/api/admin/apps', (req, res) => {
     const pass = req.headers['x-admin-password'];
-    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
+    if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
 
     const { name } = req.body;
-    db.run(`INSERT INTO apps (name) VALUES (?)`, [name], function(err) {
+    const newOwnerId = crypto.randomBytes(8).toString('hex').toUpperCase();
+    const newSecret = crypto.randomBytes(16).toString('hex');
+    
+    db.run(`INSERT INTO apps (name, ownerid, secret, version) VALUES (?, ?, ?, '1.2')`, [name, newOwnerId, newSecret], function(err) {
         if (err) return res.status(500).json({ error: "Database error: " + err.message });
-        res.json({ success: true, id: this.lastID });
+        res.json({ success: true, id: this.lastID, ownerid: newOwnerId, secret: newSecret });
     });
 });
 
