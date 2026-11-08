@@ -63,7 +63,7 @@ app.post('/api/generate', (req, res) => {
 
 app.get('/api/admin/users', (req, res) => {
     const pass = req.headers['x-admin-password'];
-    if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
+    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
     
     db.all(`SELECT * FROM users ORDER BY id DESC`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: "Database error" });
@@ -73,7 +73,7 @@ app.get('/api/admin/users', (req, res) => {
 
 app.post('/api/admin/delete', (req, res) => {
     const pass = req.headers['x-admin-password'];
-    if (pass !== "admin123") return res.status(401).json({ error: "Unauthorized" });
+    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
 
     const { id } = req.body;
     db.run(`DELETE FROM users WHERE id = ?`, [id], function(err) {
