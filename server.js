@@ -7,7 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// L'PATH DYAL L'VOLUME F RAILWAY
 const dbPath = process.env.RAILWAY_ENVIRONMENT ? '/var/data/auth.db' : './auth.db';
 const db = new sqlite3.Database(dbPath);
 
@@ -110,7 +109,8 @@ app.post('/api/login', (req, res) => {
             if (!row) return res.status(401).json({ error: "Invalid username or password" });
 
             if (row.expiry_date) {
-                const today = new Date().toISOString().split('T')[0];
+                // HNA KAN-COMPARIW L'DATE W L'WA9T (datetime-local)
+                const today = new Date().toISOString().slice(0, 16).replace('T', ' ');
                 if (today > row.expiry_date) return res.status(403).json({ error: "License has expired" });
             }
 
@@ -205,6 +205,18 @@ app.delete('/api/admin/apps/:app_id', (req, res) => {
             if (err) return res.status(500).json({ error: "Database error" });
             res.json({ success: true });
         });
+    });
+});
+
+// 10. Reset HWID
+app.post('/api/admin/reset_hwid', (req, res) => {
+    const pass = req.headers['x-admin-password'];
+    if (pass !== "APOSTADO99") return res.status(401).json({ error: "Unauthorized" });
+
+    const { id } = req.body;
+    db.run(`UPDATE users SET hwid = 'PENDING' WHERE id = ?`, [id], function(err) {
+        if (err) return res.status(500).json({ error: "Database error" });
+        res.json({ success: true });
     });
 });
 
